@@ -4,7 +4,9 @@ import User from "../../assets/user.jpg";
 import NotificationIcon from "../../assets/notification.svg";
 import "./styles.scss";
 
-const Header = () => {
+type Props = Record<string, never>;
+
+const Header: React.FC<Props> = () => {
   return (
     <div className="header">
       <div className="header__logo">

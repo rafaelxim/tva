@@ -1,26 +1,25 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import Routes from "./Routes";
+import "./sass/main.scss";
+import "./App.css";
 
-function App() {
+type Props = Record<string, never>;
+
+const App: React.FC<Props> = () => {
+  // https://mui.com/pt/customization/typography/
+  const theme = createTheme({
+    typography: {
+      // Tell MUI what's the font-size on the html element is.
+      htmlFontSize: 10,
+    },
+  });
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ThemeProvider theme={theme}>
+      <Routes />
+    </ThemeProvider>
   );
-}
+};
 
 export default App;

@@ -1,0 +1,52 @@
+.header {
+  position: relative;
+  background-color: #fff;
+  height: 6.2rem;
+  display: flex;
+  justify-content: flex-end;
+
+  &__userPic {
+    img {
+      width: 3.8rem;
+      height: 3.8rem;
+      border-radius: 50%;
+    }
+  }
+
+  &__userBox {
+    display: flex;
+    align-items: center;
+    margin-right: 2.8rem;
+  }
+
+  &__logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    img {
+      width: 14rem;
+    }
+  }
+
+  &__notifications {
+    margin-right: 1.4rem;
+    img {
+      width: 2rem;
+    }
+  }
+
+  &__userData {
+    margin-right: 1.4rem;
+  }
+
+  &__userName {
+    font-size: 1.4rem;
+    color: #6e6b7b;
+  }
+
+  &__status {
+    font-size: 1.2rem;
+    color: #b9b9c3;
+  }
+}

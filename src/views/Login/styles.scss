@@ -1,0 +1,48 @@
+.login {
+  display: flex;
+  height: 100vh;
+  position: relative;
+
+  &__left {
+    background-color: #f8f8f8;
+    flex: 0 0 60%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &__illustration {
+    width: 50rem;
+  }
+
+  &__logo {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    width: 14rem;
+  }
+
+  &__formContainer {
+    margin: 19rem 7.5rem;
+  }
+
+  &__title {
+    color: #5e5873;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+  }
+
+  &__subtitle {
+    color: #6e6b7b;
+    font-size: 1.4rem;
+    margin-bottom: 2.5rem;
+  }
+
+  &__input.MuiTextField-root {
+    margin-bottom: 1.5rem;
+  }
+
+  &__button.MuiButton-root {
+    background-color: #7367f0;
+  }
+}

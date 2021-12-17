@@ -44,5 +44,8 @@
 
   &__button.MuiButton-root {
     background-color: #7367f0;
+    &:hover {
+      background-color: #7367f0;
+    }
   }
 }

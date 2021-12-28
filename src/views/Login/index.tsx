@@ -1,21 +1,68 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import LoginIllustration from "../../assets/login_illustration.svg";
 import LogoTVA from "../../assets/logo_tva.svg";
+import { authenticate } from "../../actions";
 import "./styles.scss";
+import { StoreState } from "../../actions/types";
+import Backdrop from "../../components/Backdrop";
+import Snackbar from "../../components/Snackbar";
+
+type MessageConfig = {
+  message: string;
+  isVisible: boolean;
+  severity: "info" | "warning" | "error" | "success";
+};
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [user, setUser] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState<MessageConfig>({
+    message: "",
+    isVisible: false,
+    severity: "success",
+  });
+  const { successLogin, loading, loginAttempts } = useSelector(
+    (state: StoreState) => state.authReducer
+  );
+
+  useEffect(() => {
+    if (successLogin) {
+      navigate("/");
+    } else if (loginAttempts > 0 && !successLogin) {
+      setErrorMessage({
+        message:
+          "Não foi possível realizar o login. (teste com user: rafael / senha: rafael123)",
+        isVisible: true,
+        severity: "error",
+      });
+    }
+  }, [successLogin, loginAttempts]);
 
   const submitLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    navigate("/");
+    if (user && password) {
+      dispatch(authenticate({ username: user, password }));
+    }
   };
 
   return (
     <div className="login">
+      <Backdrop open={loading} />
+      <Snackbar
+        open={errorMessage.isVisible}
+        message={errorMessage.message}
+        severity={errorMessage.severity}
+        handleClose={() =>
+          setErrorMessage({ ...errorMessage, isVisible: false })
+        }
+      />
+
       <div className="login__left">
         <img className="login__logo" src={LogoTVA} alt="logo" />
         <img
@@ -31,10 +78,12 @@ const Login: React.FC = () => {
           <TextField
             className="login__input"
             id="outlined-search"
-            label="E-mail"
+            label="Usuário"
             type="text"
             fullWidth
             size="small"
+            value={user}
+            onChange={(e) => setUser(e.target.value)}
           />
 
           <TextField
@@ -45,6 +94,8 @@ const Login: React.FC = () => {
             autoComplete="current-password"
             fullWidth
             size="small"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
 
           <Button

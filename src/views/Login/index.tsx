@@ -5,28 +5,17 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import LoginIllustration from "../../assets/login_illustration.svg";
 import LogoTVA from "../../assets/logo_tva.svg";
-import { authenticate } from "../../actions";
+import { authenticate, setSnackbarAlert } from "../../actions";
 import "./styles.scss";
 import { StoreState } from "../../actions/types";
 import Backdrop from "../../components/Backdrop";
-import Snackbar from "../../components/Snackbar";
-
-type MessageConfig = {
-  message: string;
-  isVisible: boolean;
-  severity: "info" | "warning" | "error" | "success";
-};
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState<MessageConfig>({
-    message: "",
-    isVisible: false,
-    severity: "success",
-  });
+
   const { successLogin, loading, loginAttempts } = useSelector(
     (state: StoreState) => state.authReducer
   );
@@ -35,12 +24,14 @@ const Login: React.FC = () => {
     if (successLogin) {
       navigate("/");
     } else if (loginAttempts > 0 && !successLogin) {
-      setErrorMessage({
-        message:
-          "Não foi possível realizar o login. (teste com user: rafael / senha: rafael123)",
-        isVisible: true,
-        severity: "error",
-      });
+      dispatch(
+        setSnackbarAlert({
+          message:
+            "Não foi possível realizar o login. (teste com user: rafael / senha: rafael123)",
+          isVisible: true,
+          severity: "error",
+        })
+      );
     }
   }, [successLogin, loginAttempts]);
 
@@ -54,14 +45,6 @@ const Login: React.FC = () => {
   return (
     <div className="login">
       <Backdrop open={loading} />
-      <Snackbar
-        open={errorMessage.isVisible}
-        message={errorMessage.message}
-        severity={errorMessage.severity}
-        handleClose={() =>
-          setErrorMessage({ ...errorMessage, isVisible: false })
-        }
-      />
 
       <div className="login__left">
         <img className="login__logo" src={LogoTVA} alt="logo" />
@@ -98,12 +81,7 @@ const Login: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <Button
-            className="login__button"
-            fullWidth
-            type="submit"
-            variant="contained"
-          >
+          <Button fullWidth type="submit" variant="contained">
             Login
           </Button>
         </form>

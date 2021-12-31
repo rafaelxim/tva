@@ -17,7 +17,7 @@ const Header: React.FC<Props> = () => {
           <img src={NotificationIcon} alt="notification" />
         </div>
         <div className="header__userData">
-          <p className="header__userName">Ronaldinho Gaúcho</p>
+          <p className="header__userName">User Name</p>
           <p className="header__status">Disponível</p>
         </div>
         <div className="header__userPic">

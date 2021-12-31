@@ -1,0 +1,34 @@
+// Table
+.MuiTableContainer-root.customStyled {
+  max-height: unset;
+}
+
+.MuiChip-colorSuccess.MuiChip-filledSuccess {
+  background-color: #28c76f1f;
+  color: #28c76f;
+}
+
+.MuiChip-colorError.MuiChip-filledError {
+  background-color: #ea54551f;
+  color: #ea5455;
+}
+
+// Button
+button.MuiButton-root {
+  background-color: #7367f0;
+  &:hover {
+    background-color: #7367f0;
+  }
+
+  &.outlinedPurple {
+    color: #7367f0;
+    background-color: transparent;
+    border: 1px solid #7367f0;
+  }
+
+  &.strongRed {
+    color: #fff;
+    background-color: #ea5455;
+    border: none;
+  }
+}

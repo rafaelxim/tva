@@ -46,8 +46,9 @@ api.interceptors.request.use((config) => {
         Authorization: `Bearer ${token}`,
       },
     };
+    return newConfig;
   }
-  return newConfig;
+  return config;
 });
 
 api.interceptors.response.use(
@@ -60,7 +61,7 @@ api.interceptors.response.use(
       error.response.status === 401 &&
       token
     ) {
-      return refreshToken(error);
+      refreshToken(error);
       // history.push("/login?msg=expired", { from: "expired" });
     }
     throw error;

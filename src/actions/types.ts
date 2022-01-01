@@ -10,6 +10,7 @@ export type AuthState = {
   loading: boolean;
   successLogin: boolean;
   loginAttempts: number;
+  user: string;
 };
 
 export type AppThunk<ReturnType = void> = ThunkAction<
@@ -31,6 +32,10 @@ export interface SetLoginError extends Action {
   type: "LOGIN_ERROR";
 }
 
+export interface SetAuthState extends Action {
+  type: "SET_AUTH_STATE";
+  payload: AuthState;
+}
 export interface SetSnackBarMessage extends Action {
   type: "SET_SNACKBAR_MESSAGE";
   payload: MessageConfig;
@@ -51,4 +56,5 @@ export type ApplicationAction =
   | SetLoginPending
   | SetLoginSuccess
   | SetLoginError
-  | SetSnackBarMessage;
+  | SetSnackBarMessage
+  | SetAuthState;

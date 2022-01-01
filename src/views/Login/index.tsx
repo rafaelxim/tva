@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import LoginIllustration from "../../assets/login_illustration.svg";
@@ -15,13 +15,15 @@ const Login: React.FC = () => {
   const dispatch = useDispatch();
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { successLogin, loading, loginAttempts } = useSelector(
     (state: StoreState) => state.authReducer
   );
 
   useEffect(() => {
-    if (successLogin) {
+    const expired = searchParams.get("msg");
+    if (successLogin && expired !== "expired") {
       navigate("/");
     } else if (loginAttempts > 0 && !successLogin) {
       dispatch(
@@ -37,6 +39,7 @@ const Login: React.FC = () => {
 
   const submitLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setSearchParams({ msg: "" });
     if (user && password) {
       dispatch(authenticate({ username: user, password }));
     }

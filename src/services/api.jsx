@@ -31,7 +31,7 @@ api.interceptors.response.use(
       error.response.config &&
       error.response.status === 401
     ) {
-      history.push("/login");
+      history.push("/login?msg=expired", { from: "expired" });
     }
     throw error;
   }

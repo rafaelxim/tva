@@ -1,6 +1,6 @@
-import { Dispatch } from "redux";
+import { AnyAction, Dispatch } from "redux";
 import api from "../services/api";
-import { AppThunk, AuthenticationParams } from "./types";
+import { AppThunk, AuthenticationParams, AuthState } from "./types";
 
 export const authenticate =
   (obj: AuthenticationParams): AppThunk =>
@@ -15,3 +15,8 @@ export const authenticate =
       dispatch({ type: "LOGIN_ERROR" });
     }
   };
+
+export const setAuthState = (authState: AuthState): AnyAction => ({
+  type: "SET_AUTH_STATE",
+  payload: authState,
+});

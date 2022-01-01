@@ -48,9 +48,30 @@ const AppRoutes: React.FC<Props> = () => {
           </RequireAuth>
         }
       />
-      <Route path="/packages" element={<Packages />} />
-      <Route path="/channels" element={<Channels />} />
-      <Route path="/customers" element={<Customers />} />
+      <Route
+        path="/packages"
+        element={
+          <RequireAuth>
+            <Packages />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/channels"
+        element={
+          <RequireAuth>
+            <Channels />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/customers"
+        element={
+          <RequireAuth>
+            <Customers />
+          </RequireAuth>
+        }
+      />
     </Routes>
   );
 };

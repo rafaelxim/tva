@@ -230,7 +230,6 @@ const Customers: React.FC<Props> = () => {
         })
       );
     } catch (e: any) {
-      console.log({ e });
       dispatch(
         setSnackbarAlert({
           message: `Houve um erro ao tentar realizar a requisição`,

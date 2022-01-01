@@ -33,6 +33,7 @@
     "camelcase": "off",
     "jsx-a11y/no-noninteractive-element-interactions": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-explicit-any": "off",
     "react/function-component-definition": [
       2,
       {

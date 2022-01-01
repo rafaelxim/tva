@@ -26,7 +26,7 @@ async function refreshToken(error) {
           return api(error.config);
         }
       })
-      .catch((err) => {
+      .catch(() => {
         // Fazer algo caso não seja feito o refresh token
         history.push("/login?msg=expired", { from: "expired" });
       })

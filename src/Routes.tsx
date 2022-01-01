@@ -40,7 +40,14 @@ const AppRoutes: React.FC<Props> = () => {
       />
       <Route path="/login" element={<Login />} />
       <Route path="/users" element={<Users />} />
-      <Route path="/companies" element={<Companies />} />
+      <Route
+        path="/companies"
+        element={
+          <RequireAuth>
+            <Companies />
+          </RequireAuth>
+        }
+      />
       <Route path="/packages" element={<Packages />} />
       <Route path="/channels" element={<Channels />} />
       <Route path="/customers" element={<Customers />} />

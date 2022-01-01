@@ -30,14 +30,14 @@ import { setSnackbarAlert } from "../../actions/feedbackActions";
 
 type Props = Record<string, never>;
 
-type Company = {
+export type Company = {
   id: number;
   name: string;
   is_active: boolean;
   user: number;
 };
 
-type GetCompaniesResponse = Company[];
+export type GetCompaniesResponse = Company[];
 
 const columns: readonly Column[] = [
   { id: "id", label: "#" },

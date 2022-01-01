@@ -1,5 +1,5 @@
 export interface Column {
-  id: "id" | "empresa" | "status" | "acoes";
+  id: string;
   label: string;
   minWidth?: number;
   align?: "right";

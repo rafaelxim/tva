@@ -9,6 +9,7 @@ export const authenticate =
       dispatch({ type: "LOGIN_PENDING" });
       const { data } = await api.post("/login/", obj);
       localStorage.setItem("@tva_token", data.access);
+      localStorage.setItem("@tva_refresh_token", data.refresh);
       dispatch({ type: "LOGIN_SUCCESS" });
       // dispatch({ type: "SET_LOGIN_STATUS", payload: true });
     } catch (error) {

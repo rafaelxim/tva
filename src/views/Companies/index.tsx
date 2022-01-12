@@ -118,13 +118,13 @@ const Companies: React.FC<Props> = () => {
         await api.post("/company/", {
           name: companyName,
           is_active: companyStatus === "ativo",
-          user: 4,
+          user: 1,
         });
       } else {
-        await api.patch("/company/", {
+        await api.patch(`/company/${selectedCompany!.id}/`, {
           name: companyName,
           is_active: companyStatus === "ativo",
-          user: 4,
+          user: 1,
         });
       }
 
@@ -168,7 +168,7 @@ const Companies: React.FC<Props> = () => {
   const onDeleteCompany = async () => {
     setLoading(true);
     try {
-      await api.delete(`/company/${selectedCompany?.id}`);
+      await api.delete(`/company/${selectedCompany?.id}/`);
       fetchCompanies();
       setOpenModal(false);
       dispatch(
@@ -224,6 +224,7 @@ const Companies: React.FC<Props> = () => {
           <div className="companies__form">
             <div className="companies__formGroup">
               <TextField
+                autoComplete="off"
                 className="companies__input"
                 id="outlined-search"
                 label="Nome da Empresa"

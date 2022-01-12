@@ -28,8 +28,7 @@ const Login: React.FC = () => {
     } else if (loginAttempts > 0 && !successLogin) {
       dispatch(
         setSnackbarAlert({
-          message:
-            "Não foi possível realizar o login. (teste com user: rafael / senha: rafael123)",
+          message: "Não foi possível realizar o login.",
           isVisible: true,
           severity: "error",
         })
@@ -62,6 +61,7 @@ const Login: React.FC = () => {
           <h3 className="login__title">TvaNetPlay</h3>
           <p className="login__subtitle">Faça seu login</p>
           <TextField
+            autoComplete="off"
             className="login__input"
             id="outlined-search"
             label="Usuário"
@@ -73,11 +73,11 @@ const Login: React.FC = () => {
           />
 
           <TextField
+            autoComplete="off"
             className="login__input"
             id="outlined-password-input"
             label="Password"
             type="password"
-            autoComplete="current-password"
             fullWidth
             size="small"
             value={password}

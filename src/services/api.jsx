@@ -1,7 +1,7 @@
 import axios from "axios";
 import history from "../history";
 
-const BASE_URL = "http://tv-netplay-api.herokuapp.com/v1";
+const BASE_URL = "http://tvanetplay.mihub.com.br/v1";
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -61,7 +61,7 @@ api.interceptors.response.use(
       error.response.status === 401 &&
       token
     ) {
-      refreshToken(error);
+      return refreshToken(error);
       // history.push("/login?msg=expired", { from: "expired" });
     }
     throw error;

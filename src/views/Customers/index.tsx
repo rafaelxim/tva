@@ -80,6 +80,8 @@ const Customers: React.FC<Props> = () => {
   const [loading, setLoading] = useState(false);
   const [modalIsOpen, setOpenModal] = useState(false);
   const [customerName, setCustomerName] = useState<string>();
+  const [password, setPassword] = useState<string>();
+  const [ageControlPassword, setAgeControlPassword] = useState<string>();
   const [customerMail, setCustomerMail] = useState<string>();
   const [customerStatus, setCustomerStatus] = useState<string>("ativo");
   const [modalMode, setModalMode] = useState<"Edit" | "Add">("Add");
@@ -158,6 +160,8 @@ const Customers: React.FC<Props> = () => {
     setCustomerName("");
     setSelectedCompanies([]);
     setCustomerMail("");
+    setAgeControlPassword("");
+    setPassword("");
   };
 
   const saveCustomerData = async () => {
@@ -165,6 +169,28 @@ const Customers: React.FC<Props> = () => {
       dispatch(
         setSnackbarAlert({
           message: "O campo nome do cliente é obrigatório!",
+          isVisible: true,
+          severity: "error",
+        })
+      );
+      return;
+    }
+
+    if (!password) {
+      dispatch(
+        setSnackbarAlert({
+          message: "O campo de senha do cliente é obrigatório!",
+          isVisible: true,
+          severity: "error",
+        })
+      );
+      return;
+    }
+
+    if (!ageControlPassword) {
+      dispatch(
+        setSnackbarAlert({
+          message: "O campo da senha de controle de idade é obrigatório!",
           isVisible: true,
           severity: "error",
         })
@@ -202,19 +228,19 @@ const Customers: React.FC<Props> = () => {
           is_active: customerStatus === "ativo",
           company: getCompanyCodes(),
           email: customerMail,
-          user: 4,
-          password: "123456789",
-          age_control_password: "123456789",
+          user: 1,
+          password,
+          age_control_password: ageControlPassword,
         });
       } else {
-        await api.patch("/customer/", {
+        await api.patch(`/customer/${selectedCustomer!.id}/`, {
           name: customerName,
           is_active: customerStatus === "ativo",
           company: getCompanyCodes(),
           email: customerMail,
-          user: 4,
-          password: "123456789",
-          age_control_password: "123456789",
+          user: 1,
+          password,
+          age_control_password: ageControlPassword,
         });
       }
 
@@ -255,12 +281,14 @@ const Customers: React.FC<Props> = () => {
     setSelectedCompanies(getCompanyNamesFromId(row.company));
     setOpenModal(true);
     setSelectedCustomer(row);
+    setAgeControlPassword(row.age_control_password);
+    setPassword(row.password);
   };
 
   const onDeleteCustomer = async () => {
     setLoading(true);
     try {
-      await api.delete(`/customer/${selectedCustomer?.id}`);
+      await api.delete(`/customer/${selectedCustomer?.id}/`);
       fetchCustomers();
       setOpenModal(false);
       dispatch(
@@ -334,6 +362,7 @@ const Customers: React.FC<Props> = () => {
                 type="text"
                 size="small"
                 value={customerName}
+                autoComplete="off"
                 onChange={(e) => setCustomerName(e.target.value)}
                 fullWidth
               />
@@ -360,6 +389,7 @@ const Customers: React.FC<Props> = () => {
           <div className="customers__form">
             <div className="customers__formGroup">
               <TextField
+                autoComplete="off"
                 className="customers__input"
                 id="outlined-search"
                 label="Email"
@@ -396,6 +426,36 @@ const Customers: React.FC<Props> = () => {
                   ))}
                 </Select>
               </FormControl>
+            </div>
+          </div>
+
+          <div className="customers__form">
+            <div className="customers__formGroup">
+              <TextField
+                autoComplete="off"
+                className="customers__input"
+                id="outlined-search"
+                label="Senha"
+                type="password"
+                size="small"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                fullWidth
+              />
+            </div>
+
+            <div className="customers__formGroup">
+              <TextField
+                autoComplete="off"
+                className="customers__input"
+                id="outlined-search"
+                label="Senha (Controle de idade)"
+                type="password"
+                size="small"
+                value={ageControlPassword}
+                onChange={(e) => setAgeControlPassword(e.target.value)}
+                fullWidth
+              />
             </div>
           </div>
 

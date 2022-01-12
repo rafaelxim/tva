@@ -4,7 +4,6 @@ const obj: AuthState = {
   loading: false,
   successLogin: false,
   loginAttempts: 0,
-  user: "",
 };
 
 // eslint-disable-next-line default-param-last
@@ -18,7 +17,7 @@ export default (state = obj, action: ApplicationAction): AuthState => {
         loading: false,
         loginAttempts: 0,
         successLogin: true,
-        user: "userName",
+        user: action.payload,
       };
     case "LOGIN_ERROR":
       return {

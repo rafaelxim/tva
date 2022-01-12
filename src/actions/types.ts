@@ -10,7 +10,7 @@ export type AuthState = {
   loading: boolean;
   successLogin: boolean;
   loginAttempts: number;
-  user: string;
+  user?: UserDetailsResponse;
 };
 
 export type AppThunk<ReturnType = void> = ThunkAction<
@@ -26,6 +26,7 @@ export interface SetLoginPending extends Action {
 
 export interface SetLoginSuccess extends Action {
   type: "LOGIN_SUCCESS";
+  payload: UserDetailsResponse;
 }
 
 export interface SetLoginError extends Action {
@@ -50,6 +51,24 @@ export type MessageConfig = {
   message: string;
   isVisible: boolean;
   severity: "info" | "warning" | "error" | "success";
+};
+
+export type LoginResponse = {
+  access: string;
+  refresh: string;
+};
+
+export type UserDetailsResponse = {
+  id: number;
+  username: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  groups: string[];
+};
+
+export type DecodedToken = {
+  user_id: number;
 };
 
 export type ApplicationAction =

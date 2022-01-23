@@ -43,7 +43,9 @@ const Header: React.FC<Props> = () => {
         </div>
         <div className="header__userData">
           <p className="header__userName">{`${user?.first_name} ${user?.last_name}`}</p>
-          <p className="header__status">Disponível</p>
+          <p className="header__status">
+            {user?.groups.map((g) => g.name).join(", ")}
+          </p>
         </div>
         <div className="header__userPic">
           <img src={User} alt="userPic" />

@@ -3,6 +3,10 @@
   height: 100vh;
   position: relative;
 
+  &__right {
+    flex: 0 0 40%;
+  }
+
   &__left {
     background-color: #f8f8f8;
     flex: 0 0 60%;

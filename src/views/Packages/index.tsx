@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -31,6 +31,11 @@ import Backdrop from "../../components/Backdrop";
 import EditIcon from "../../assets/edit.svg";
 import { setSnackbarAlert } from "../../actions/feedbackActions";
 import { Company, GetCompaniesResponse } from "../Companies";
+import { StoreState } from "../../actions/types";
+import { hasRole } from "../../helpers/authHelper";
+import PermissionDenied from "../PermissionDenied";
+import FormField from "../../components/FormField";
+import FormRow from "../../components/FormRow";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -68,7 +73,9 @@ const columns: readonly Column[] = [
 
 const Packages: React.FC<Props> = () => {
   const dispatch = useDispatch();
+  const { user } = useSelector((state: StoreState) => state.authReducer);
 
+  const [hasPermission, setPermission] = useState(false);
   const [rows, setRows] = useState<Package[]>();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -82,8 +89,16 @@ const Packages: React.FC<Props> = () => {
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchPackages();
-    fetchCompanies();
+    const isPermitOk =
+      hasRole(user!, "Administrator") ||
+      hasRole(user!, "Attendant") ||
+      hasRole(user!, "Operator");
+    setPermission(isPermitOk);
+
+    if (isPermitOk) {
+      fetchPackages();
+      fetchCompanies();
+    }
   }, []);
 
   const fetchCompanies = async () => {
@@ -179,20 +194,16 @@ const Packages: React.FC<Props> = () => {
 
     try {
       setLoading(true);
+      const payload = {
+        name: packageName,
+        is_active: packageStatus === "ativo",
+        company: getCompanyCodes()[0],
+        user: user!.id,
+      };
       if (modalMode === "Add") {
-        await api.post("/package/", {
-          name: packageName,
-          is_active: packageStatus === "ativo",
-          company: getCompanyCodes()[0],
-          user: 1,
-        });
+        await api.post("/package/", payload);
       } else {
-        await api.patch(`/package/${selectedPackage!.id}/`, {
-          name: packageName,
-          is_active: packageStatus === "ativo",
-          company: getCompanyCodes()[0],
-          user: 1,
-        });
+        await api.patch(`/package/${selectedPackage!.id}/`, payload);
       }
 
       setLoading(false);
@@ -233,31 +244,31 @@ const Packages: React.FC<Props> = () => {
     setSelectedPackage(row);
   };
 
-  const onDeletePackage = async () => {
-    setLoading(true);
-    try {
-      await api.delete(`/package/${selectedPackage?.id}/`);
-      fetchPackages();
-      setOpenModal(false);
-      dispatch(
-        setSnackbarAlert({
-          message: "O Pacote foi excluído",
-          isVisible: true,
-          severity: "success",
-        })
-      );
-      setLoading(false);
-    } catch (e) {
-      dispatch(
-        setSnackbarAlert({
-          message: "Houve um erro ao tentar realizar a requisição",
-          isVisible: true,
-          severity: "error",
-        })
-      );
-      setLoading(false);
-    }
-  };
+  // const onDeletePackage = async () => {
+  //   setLoading(true);
+  //   try {
+  //     await api.delete(`/package/${selectedPackage?.id}/`);
+  //     fetchPackages();
+  //     setOpenModal(false);
+  //     dispatch(
+  //       setSnackbarAlert({
+  //         message: "O Pacote foi excluído",
+  //         isVisible: true,
+  //         severity: "success",
+  //       })
+  //     );
+  //     setLoading(false);
+  //   } catch (e) {
+  //     dispatch(
+  //       setSnackbarAlert({
+  //         message: "Houve um erro ao tentar realizar a requisição",
+  //         isVisible: true,
+  //         severity: "error",
+  //       })
+  //     );
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleCloseModal = () => {
     resetModalState();
@@ -275,6 +286,10 @@ const Packages: React.FC<Props> = () => {
       typeof value === "string" ? value.split(",").slice(-1) : value.slice(-1)
     );
   };
+
+  if (!hasPermission) {
+    return <PermissionDenied />;
+  }
 
   return (
     <div className="packages">
@@ -301,8 +316,8 @@ const Packages: React.FC<Props> = () => {
             <span>Dados do Pacote</span>
           </h4>
 
-          <div className="packages__form">
-            <div className="packages__formGroup">
+          <FormRow>
+            <FormField>
               <TextField
                 className="packages__input"
                 id="outlined-search"
@@ -314,9 +329,9 @@ const Packages: React.FC<Props> = () => {
                 onChange={(e) => setPackageName(e.target.value)}
                 fullWidth
               />
-            </div>
+            </FormField>
 
-            <div className="packages__formGroup">
+            <FormField>
               <FormControl fullWidth sx={{ m: 1, minWidth: 200 }}>
                 <InputLabel id="packages__statusLabel">Status</InputLabel>
                 <Select
@@ -331,11 +346,11 @@ const Packages: React.FC<Props> = () => {
                   <MenuItem value="inativo">Inativo</MenuItem>
                 </Select>
               </FormControl>
-            </div>
-          </div>
+            </FormField>
+          </FormRow>
 
-          <div className="packages__form">
-            <div className="packages__formGroup">
+          <FormRow>
+            <FormField>
               <FormControl size="small" fullWidth sx={{ m: 1, width: 200 }}>
                 <InputLabel id="packages__empresasLabel">Empresa(s)</InputLabel>
                 <Select
@@ -359,8 +374,8 @@ const Packages: React.FC<Props> = () => {
                   ))}
                 </Select>
               </FormControl>
-            </div>
-          </div>
+            </FormField>
+          </FormRow>
 
           <div className="packages__actions">
             <Button
@@ -380,7 +395,7 @@ const Packages: React.FC<Props> = () => {
               Resetar
             </Button>
 
-            {modalMode === "Edit" && (
+            {/* {modalMode === "Edit" && (
               <Button
                 className="strongRed"
                 onClick={() => onDeletePackage()}
@@ -389,7 +404,7 @@ const Packages: React.FC<Props> = () => {
               >
                 Excluir Pacote
               </Button>
-            )}
+            )} */}
           </div>
         </DialogContent>
       </Dialog>

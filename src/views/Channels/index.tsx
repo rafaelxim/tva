@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -31,6 +31,11 @@ import Backdrop from "../../components/Backdrop";
 import EditIcon from "../../assets/edit.svg";
 import { setSnackbarAlert } from "../../actions/feedbackActions";
 import { Package, GetPackagesResponse } from "../Packages";
+import { StoreState } from "../../actions/types";
+import { hasRole } from "../../helpers/authHelper";
+import PermissionDenied from "../PermissionDenied";
+import FormField from "../../components/FormField";
+import FormRow from "../../components/FormRow";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -49,7 +54,7 @@ type Channel = {
   name: string;
   is_active: boolean;
   age_control: boolean;
-  channel: number[];
+  package: number[];
   logo: string;
   url: string;
   number: number;
@@ -72,7 +77,9 @@ const columns: readonly Column[] = [
 
 const Channels: React.FC<Props> = () => {
   const dispatch = useDispatch();
+  const { user } = useSelector((state: StoreState) => state.authReducer);
 
+  const [hasPermission, setPermission] = useState(false);
   const [rows, setRows] = useState<Channel[]>();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -90,8 +97,16 @@ const Channels: React.FC<Props> = () => {
   const [selectedPackages, setSelectedPackages] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchChannels();
-    fetchPackages();
+    const isPermitOk =
+      hasRole(user!, "Administrator") ||
+      hasRole(user!, "Attendant") ||
+      hasRole(user!, "Operator");
+    setPermission(isPermitOk);
+
+    if (isPermitOk) {
+      fetchChannels();
+      fetchPackages();
+    }
   }, []);
 
   const fetchPackages = async () => {
@@ -194,8 +209,8 @@ const Channels: React.FC<Props> = () => {
         name: channelName,
         is_active: channelStatus === "ativo",
         age_control: ageControl === "ativo",
-        channel: getPackageCodes(),
-        user: 1,
+        package: getPackageCodes(),
+        user: user!.id,
         logo,
         url,
         number,
@@ -243,36 +258,36 @@ const Channels: React.FC<Props> = () => {
     setNumber(row.number);
     setUrl(row.url);
     setLogo(row.logo);
-    setSelectedPackages(getPackageNamesFromId(row.channel));
+    setSelectedPackages(getPackageNamesFromId(row.package));
     setOpenModal(true);
     setSelectedChannel(row);
   };
 
-  const onDeleteChannel = async () => {
-    setLoading(true);
-    try {
-      await api.delete(`/channel/${selectedChannel?.id}/`);
-      fetchChannels();
-      setOpenModal(false);
-      dispatch(
-        setSnackbarAlert({
-          message: "O cliente foi excluído",
-          isVisible: true,
-          severity: "success",
-        })
-      );
-      setLoading(false);
-    } catch (e) {
-      dispatch(
-        setSnackbarAlert({
-          message: "Houve um erro ao tentar realizar a requisição",
-          isVisible: true,
-          severity: "error",
-        })
-      );
-      setLoading(false);
-    }
-  };
+  // const onDeleteChannel = async () => {
+  //   setLoading(true);
+  //   try {
+  //     await api.delete(`/channel/${selectedChannel?.id}/`);
+  //     fetchChannels();
+  //     setOpenModal(false);
+  //     dispatch(
+  //       setSnackbarAlert({
+  //         message: "O cliente foi excluído",
+  //         isVisible: true,
+  //         severity: "success",
+  //       })
+  //     );
+  //     setLoading(false);
+  //   } catch (e) {
+  //     dispatch(
+  //       setSnackbarAlert({
+  //         message: "Houve um erro ao tentar realizar a requisição",
+  //         isVisible: true,
+  //         severity: "error",
+  //       })
+  //     );
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleCloseModal = () => {
     resetModalState();
@@ -290,6 +305,10 @@ const Channels: React.FC<Props> = () => {
       typeof value === "string" ? value.split(",") : value
     );
   };
+
+  if (!hasPermission) {
+    return <PermissionDenied />;
+  }
 
   return (
     <div className="channels">
@@ -316,8 +335,8 @@ const Channels: React.FC<Props> = () => {
             <span>Dados do Canal</span>
           </h4>
 
-          <div className="channels__form">
-            <div className="channels__formGroup">
+          <FormRow>
+            <FormField>
               <TextField
                 className="channels__input"
                 id="outlined-search"
@@ -329,9 +348,9 @@ const Channels: React.FC<Props> = () => {
                 onChange={(e) => setChannelName(e.target.value)}
                 fullWidth
               />
-            </div>
+            </FormField>
 
-            <div className="channels__formGroup">
+            <FormField>
               <FormControl fullWidth sx={{ m: 1, minWidth: 200 }}>
                 <InputLabel id="channels__statusLabel">Status</InputLabel>
                 <Select
@@ -346,11 +365,11 @@ const Channels: React.FC<Props> = () => {
                   <MenuItem value="inativo">Inativo</MenuItem>
                 </Select>
               </FormControl>
-            </div>
-          </div>
+            </FormField>
+          </FormRow>
 
-          <div className="channels__form">
-            <div className="channels__formGroup">
+          <FormRow>
+            <FormField>
               <FormControl fullWidth sx={{ m: 1, minWidth: 200 }}>
                 <InputLabel id="channels__statusLabel">
                   Controle de idade
@@ -367,9 +386,9 @@ const Channels: React.FC<Props> = () => {
                   <MenuItem value="inativo">Inativo</MenuItem>
                 </Select>
               </FormControl>
-            </div>
+            </FormField>
 
-            <div className="channels__formGroup">
+            <FormField>
               <TextField
                 className="channels__input"
                 label="Número do Canal"
@@ -380,11 +399,11 @@ const Channels: React.FC<Props> = () => {
                 onChange={(e) => setNumber(parseInt(e.target.value, 10))}
                 fullWidth
               />
-            </div>
-          </div>
+            </FormField>
+          </FormRow>
 
-          <div className="channels__form">
-            <div className="channels__formGroup">
+          <FormRow>
+            <FormField>
               <TextField
                 className="channels__input"
                 id="outlined-search"
@@ -396,9 +415,9 @@ const Channels: React.FC<Props> = () => {
                 onChange={(e) => setLogo(e.target.value)}
                 fullWidth
               />
-            </div>
+            </FormField>
 
-            <div className="channels__formGroup">
+            <FormField>
               <TextField
                 className="channels__input"
                 id="outlined-search"
@@ -410,11 +429,11 @@ const Channels: React.FC<Props> = () => {
                 onChange={(e) => setUrl(e.target.value)}
                 fullWidth
               />
-            </div>
-          </div>
+            </FormField>
+          </FormRow>
 
-          <div className="channels__form">
-            <div className="channels__formGroup">
+          <FormRow>
+            <FormField>
               <FormControl size="small" fullWidth sx={{ m: 1, width: 200 }}>
                 <InputLabel id="channels__empresasLabel">Pacotes</InputLabel>
                 <Select
@@ -436,8 +455,8 @@ const Channels: React.FC<Props> = () => {
                   ))}
                 </Select>
               </FormControl>
-            </div>
-          </div>
+            </FormField>
+          </FormRow>
 
           <div className="channels__actions">
             <Button
@@ -457,7 +476,7 @@ const Channels: React.FC<Props> = () => {
               Resetar
             </Button>
 
-            {modalMode === "Edit" && (
+            {/* {modalMode === "Edit" && (
               <Button
                 className="strongRed"
                 onClick={() => onDeleteChannel()}
@@ -466,7 +485,7 @@ const Channels: React.FC<Props> = () => {
               >
                 Excluir Canal
               </Button>
-            )}
+            )} */}
           </div>
         </DialogContent>
       </Dialog>

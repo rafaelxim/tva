@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -32,6 +32,11 @@ import EditIcon from "../../assets/edit.svg";
 import { setSnackbarAlert } from "../../actions/feedbackActions";
 import { Company, GetCompaniesResponse } from "../Companies";
 import { validateEmail } from "../../utils";
+import { StoreState } from "../../actions/types";
+import { hasRole } from "../../helpers/authHelper";
+import PermissionDenied from "../PermissionDenied";
+import FormRow from "../../components/FormRow";
+import FormField from "../../components/FormField";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -73,7 +78,9 @@ const columns: readonly Column[] = [
 
 const Customers: React.FC<Props> = () => {
   const dispatch = useDispatch();
+  const { user } = useSelector((state: StoreState) => state.authReducer);
 
+  const [hasPermission, setPermission] = useState(false);
   const [rows, setRows] = useState<Customer[]>();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -90,8 +97,13 @@ const Customers: React.FC<Props> = () => {
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchCustomers();
-    fetchCompanies();
+    const isPermitOk = hasRole(user!, "Company");
+    setPermission(isPermitOk);
+
+    if (isPermitOk) {
+      fetchCustomers();
+      fetchCompanies();
+    }
   }, []);
 
   const fetchCompanies = async () => {
@@ -222,26 +234,21 @@ const Customers: React.FC<Props> = () => {
 
     try {
       setLoading(true);
+
+      const payload = {
+        name: customerName,
+        is_active: customerStatus === "ativo",
+        company: getCompanyCodes(),
+        email: customerMail,
+        user: user!.id,
+        password,
+        age_control_password: ageControlPassword,
+      };
+
       if (modalMode === "Add") {
-        await api.post("/customer/", {
-          name: customerName,
-          is_active: customerStatus === "ativo",
-          company: getCompanyCodes(),
-          email: customerMail,
-          user: 1,
-          password,
-          age_control_password: ageControlPassword,
-        });
+        await api.post("/customer/", payload);
       } else {
-        await api.patch(`/customer/${selectedCustomer!.id}/`, {
-          name: customerName,
-          is_active: customerStatus === "ativo",
-          company: getCompanyCodes(),
-          email: customerMail,
-          user: 1,
-          password,
-          age_control_password: ageControlPassword,
-        });
+        await api.patch(`/customer/${selectedCustomer!.id}/`, payload);
       }
 
       setLoading(false);
@@ -285,31 +292,31 @@ const Customers: React.FC<Props> = () => {
     setPassword(row.password);
   };
 
-  const onDeleteCustomer = async () => {
-    setLoading(true);
-    try {
-      await api.delete(`/customer/${selectedCustomer?.id}/`);
-      fetchCustomers();
-      setOpenModal(false);
-      dispatch(
-        setSnackbarAlert({
-          message: "O cliente foi excluído",
-          isVisible: true,
-          severity: "success",
-        })
-      );
-      setLoading(false);
-    } catch (e) {
-      dispatch(
-        setSnackbarAlert({
-          message: "Houve um erro ao tentar realizar a requisição",
-          isVisible: true,
-          severity: "error",
-        })
-      );
-      setLoading(false);
-    }
-  };
+  // const onDeleteCustomer = async () => {
+  //   setLoading(true);
+  //   try {
+  //     await api.delete(`/customer/${selectedCustomer?.id}/`);
+  //     fetchCustomers();
+  //     setOpenModal(false);
+  //     dispatch(
+  //       setSnackbarAlert({
+  //         message: "O cliente foi excluído",
+  //         isVisible: true,
+  //         severity: "success",
+  //       })
+  //     );
+  //     setLoading(false);
+  //   } catch (e) {
+  //     dispatch(
+  //       setSnackbarAlert({
+  //         message: "Houve um erro ao tentar realizar a requisição",
+  //         isVisible: true,
+  //         severity: "error",
+  //       })
+  //     );
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleCloseModal = () => {
     resetModalState();
@@ -327,6 +334,10 @@ const Customers: React.FC<Props> = () => {
       typeof value === "string" ? value.split(",") : value
     );
   };
+
+  if (!hasPermission) {
+    return <PermissionDenied />;
+  }
 
   return (
     <div className="customers">
@@ -353,8 +364,8 @@ const Customers: React.FC<Props> = () => {
             <span>Dados do Cliente</span>
           </h4>
 
-          <div className="customers__form">
-            <div className="customers__formGroup">
+          <FormRow>
+            <FormField>
               <TextField
                 className="customers__input"
                 id="outlined-search"
@@ -366,9 +377,9 @@ const Customers: React.FC<Props> = () => {
                 onChange={(e) => setCustomerName(e.target.value)}
                 fullWidth
               />
-            </div>
+            </FormField>
 
-            <div className="customers__formGroup">
+            <FormField>
               <FormControl fullWidth sx={{ m: 1, minWidth: 200 }}>
                 <InputLabel id="customers__statusLabel">Status</InputLabel>
                 <Select
@@ -383,11 +394,11 @@ const Customers: React.FC<Props> = () => {
                   <MenuItem value="inativo">Inativo</MenuItem>
                 </Select>
               </FormControl>
-            </div>
-          </div>
+            </FormField>
+          </FormRow>
 
-          <div className="customers__form">
-            <div className="customers__formGroup">
+          <FormRow>
+            <FormField>
               <TextField
                 autoComplete="off"
                 className="customers__input"
@@ -399,8 +410,8 @@ const Customers: React.FC<Props> = () => {
                 onChange={(e) => setCustomerMail(e.target.value)}
                 fullWidth
               />
-            </div>
-            <div className="customers__formGroup">
+            </FormField>
+            <FormField>
               <FormControl size="small" fullWidth sx={{ m: 1, width: 200 }}>
                 <InputLabel id="customers__empresasLabel">
                   Empresa(s)
@@ -426,11 +437,11 @@ const Customers: React.FC<Props> = () => {
                   ))}
                 </Select>
               </FormControl>
-            </div>
-          </div>
+            </FormField>
+          </FormRow>
 
-          <div className="customers__form">
-            <div className="customers__formGroup">
+          <FormRow>
+            <FormField>
               <TextField
                 autoComplete="off"
                 className="customers__input"
@@ -442,9 +453,9 @@ const Customers: React.FC<Props> = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 fullWidth
               />
-            </div>
+            </FormField>
 
-            <div className="customers__formGroup">
+            <FormField>
               <TextField
                 autoComplete="off"
                 className="customers__input"
@@ -456,8 +467,8 @@ const Customers: React.FC<Props> = () => {
                 onChange={(e) => setAgeControlPassword(e.target.value)}
                 fullWidth
               />
-            </div>
-          </div>
+            </FormField>
+          </FormRow>
 
           <div className="customers__actions">
             <Button
@@ -477,7 +488,7 @@ const Customers: React.FC<Props> = () => {
               Resetar
             </Button>
 
-            {modalMode === "Edit" && (
+            {/* {modalMode === "Edit" && (
               <Button
                 className="strongRed"
                 onClick={() => onDeleteCustomer()}
@@ -486,7 +497,7 @@ const Customers: React.FC<Props> = () => {
               >
                 Excluir Cliente
               </Button>
-            )}
+            )} */}
           </div>
         </DialogContent>
       </Dialog>

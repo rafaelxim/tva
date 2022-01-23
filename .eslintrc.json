@@ -20,6 +20,7 @@
   "plugins": ["react", "react-hooks", "@typescript-eslint", "prettier"],
   "rules": {
     "import/no-unresolved": "error",
+    "react/require-default-props": "off",
     "no-use-before-define": "off",
     "react/jsx-filename-extension": [0, { "extensions": [".js", ".jsx"] }],
     "import/extensions": "off",

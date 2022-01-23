@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -27,6 +27,11 @@ import { Column } from "../../types/muiTypes";
 import Backdrop from "../../components/Backdrop";
 import EditIcon from "../../assets/edit.svg";
 import { setSnackbarAlert } from "../../actions/feedbackActions";
+import { StoreState } from "../../actions/types";
+import { hasRole } from "../../helpers/authHelper";
+import PermissionDenied from "../PermissionDenied";
+import FormRow from "../../components/FormRow";
+import FormField from "../../components/FormField";
 
 type Props = Record<string, never>;
 
@@ -54,7 +59,9 @@ const columns: readonly Column[] = [
 
 const Companies: React.FC<Props> = () => {
   const dispatch = useDispatch();
+  const { user } = useSelector((state: StoreState) => state.authReducer);
 
+  const [hasPermission, setPermission] = useState(false);
   const [rows, setRows] = useState<Company[]>();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -66,7 +73,15 @@ const Companies: React.FC<Props> = () => {
   const [selectedCompany, setSelectedCompany] = useState<Company>();
 
   useEffect(() => {
-    fetchCompanies();
+    const isPermitOk =
+      hasRole(user!, "Administrator") ||
+      hasRole(user!, "Attendant") ||
+      hasRole(user!, "Operator");
+    setPermission(isPermitOk);
+
+    if (isPermitOk) {
+      fetchCompanies();
+    }
   }, []);
 
   const fetchCompanies = async () => {
@@ -114,18 +129,16 @@ const Companies: React.FC<Props> = () => {
 
     try {
       setLoading(true);
+
+      const payload = {
+        name: companyName,
+        is_active: companyStatus === "ativo",
+        user: user!.id,
+      };
       if (modalMode === "Add") {
-        await api.post("/company/", {
-          name: companyName,
-          is_active: companyStatus === "ativo",
-          user: 1,
-        });
+        await api.post("/company/", payload);
       } else {
-        await api.patch(`/company/${selectedCompany!.id}/`, {
-          name: companyName,
-          is_active: companyStatus === "ativo",
-          user: 1,
-        });
+        await api.patch(`/company/${selectedCompany!.id}/`, payload);
       }
 
       setLoading(false);
@@ -165,36 +178,40 @@ const Companies: React.FC<Props> = () => {
     setSelectedCompany(row);
   };
 
-  const onDeleteCompany = async () => {
-    setLoading(true);
-    try {
-      await api.delete(`/company/${selectedCompany?.id}/`);
-      fetchCompanies();
-      setOpenModal(false);
-      dispatch(
-        setSnackbarAlert({
-          message: "A empresa foi excluída",
-          isVisible: true,
-          severity: "success",
-        })
-      );
-      setLoading(false);
-    } catch (e) {
-      dispatch(
-        setSnackbarAlert({
-          message: "Houve um erro ao tentar realizar a requisição",
-          isVisible: true,
-          severity: "error",
-        })
-      );
-      setLoading(false);
-    }
-  };
+  // const onDeleteCompany = async () => {
+  //   setLoading(true);
+  //   try {
+  //     await api.delete(`/company/${selectedCompany?.id}/`);
+  //     fetchCompanies();
+  //     setOpenModal(false);
+  //     dispatch(
+  //       setSnackbarAlert({
+  //         message: "A empresa foi excluída",
+  //         isVisible: true,
+  //         severity: "success",
+  //       })
+  //     );
+  //     setLoading(false);
+  //   } catch (e) {
+  //     dispatch(
+  //       setSnackbarAlert({
+  //         message: "Houve um erro ao tentar realizar a requisição",
+  //         isVisible: true,
+  //         severity: "error",
+  //       })
+  //     );
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleCloseModal = () => {
     resetModalState();
     setOpenModal(false);
   };
+
+  if (!hasPermission) {
+    return <PermissionDenied />;
+  }
 
   return (
     <div className="companies">
@@ -221,8 +238,8 @@ const Companies: React.FC<Props> = () => {
             <span>Dados da Empresa</span>
           </h4>
 
-          <div className="companies__form">
-            <div className="companies__formGroup">
+          <FormRow>
+            <FormField>
               <TextField
                 autoComplete="off"
                 className="companies__input"
@@ -234,9 +251,9 @@ const Companies: React.FC<Props> = () => {
                 onChange={(e) => setCompanyName(e.target.value)}
                 fullWidth
               />
-            </div>
+            </FormField>
 
-            <div className="companies__formGroup">
+            <FormField>
               <FormControl fullWidth sx={{ m: 1, minWidth: 200 }}>
                 <InputLabel id="companies__statusLabel">Status</InputLabel>
                 <Select
@@ -251,9 +268,8 @@ const Companies: React.FC<Props> = () => {
                   <MenuItem value="inativo">Inativo</MenuItem>
                 </Select>
               </FormControl>
-            </div>
-          </div>
-
+            </FormField>
+          </FormRow>
           <div className="companies__actions">
             <Button
               onClick={() => saveCompanyData()}
@@ -272,7 +288,7 @@ const Companies: React.FC<Props> = () => {
               Resetar
             </Button>
 
-            {modalMode === "Edit" && (
+            {/* {modalMode === "Edit" && (
               <Button
                 className="strongRed"
                 onClick={() => onDeleteCompany()}
@@ -281,7 +297,7 @@ const Companies: React.FC<Props> = () => {
               >
                 Excluir Empresa
               </Button>
-            )}
+            )} */}
           </div>
         </DialogContent>
       </Dialog>

@@ -7,8 +7,29 @@ import {
   AuthState,
   DecodedToken,
   LoginResponse,
+  Roles,
   UserDetailsResponse,
 } from "./types";
+
+export const ROLES: Roles = [
+  { name: "Administrator" },
+  { name: "Attendant" },
+  { name: "Company" },
+  { name: "Customer" },
+  { name: "Operator" },
+];
+
+type RolesIds = {
+  [key: string]: string;
+};
+
+export const ROLES_IDS: RolesIds = {
+  "1": "Administrator",
+  "2": "Operator",
+  "3": "Attendant",
+  "4": "Company",
+  "5": "Customer",
+};
 
 export const authenticate =
   (obj: AuthenticationParams): AppThunk =>
@@ -22,6 +43,11 @@ export const authenticate =
       const details = await api.get<UserDetailsResponse>(
         `/details/${decodedToken.user_id}/`
       );
+
+      if (details.data.groups.length === 0) {
+        details.data.groups = ROLES;
+      }
+
       dispatch({ type: "LOGIN_SUCCESS", payload: details.data });
     } catch (error) {
       console.log(error);

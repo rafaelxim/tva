@@ -1,0 +1,36 @@
+.denied {
+  color: #063793;
+  padding: 5rem;
+
+  &__image {
+    display: flex;
+    justify-content: center;
+
+    img {
+      width: 30rem;
+    }
+  }
+
+  &__title {
+    font-weight: 700;
+    font-size: 3.5rem;
+    letter-spacing: 0px;
+    text-align: center;
+    margin-top: 4rem;
+  }
+
+  &__text {
+    font-size: 2.2rem;
+    letter-spacing: 0px;
+    text-align: center;
+  }
+
+  &__actions {
+    text-align: center;
+    margin-top: 5rem;
+
+    button {
+      background-color: #063793 !important;
+    }
+  }
+}

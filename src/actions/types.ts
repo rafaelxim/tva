@@ -58,14 +58,25 @@ export type LoginResponse = {
   refresh: string;
 };
 
+export type Roles = {
+  name: Groups;
+}[];
+
 export type UserDetailsResponse = {
   id: number;
   username: string;
   first_name: string;
   last_name: string;
   email: string;
-  groups: string[];
+  groups: Roles;
 };
+
+export type Groups =
+  | "Administrator"
+  | "Operator"
+  | "Attendant"
+  | "Company"
+  | "Customer";
 
 export type DecodedToken = {
   user_id: number;

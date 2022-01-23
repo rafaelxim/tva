@@ -9,6 +9,8 @@ import { authenticate, setSnackbarAlert } from "../../actions";
 import "./styles.scss";
 import { StoreState } from "../../actions/types";
 import Backdrop from "../../components/Backdrop";
+import FormRow from "../../components/FormRow";
+import FormField from "../../components/FormField";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -60,29 +62,37 @@ const Login: React.FC = () => {
         <form onSubmit={(e) => submitLogin(e)} className="login__formContainer">
           <h3 className="login__title">TvaNetPlay</h3>
           <p className="login__subtitle">Faça seu login</p>
-          <TextField
-            autoComplete="off"
-            className="login__input"
-            id="outlined-search"
-            label="Usuário"
-            type="text"
-            fullWidth
-            size="small"
-            value={user}
-            onChange={(e) => setUser(e.target.value)}
-          />
+          <FormRow>
+            <FormField>
+              <TextField
+                autoComplete="off"
+                className="login__input"
+                id="outlined-search"
+                label="Usuário"
+                type="text"
+                fullWidth
+                size="small"
+                value={user}
+                onChange={(e) => setUser(e.target.value)}
+              />
+            </FormField>
+          </FormRow>
 
-          <TextField
-            autoComplete="off"
-            className="login__input"
-            id="outlined-password-input"
-            label="Password"
-            type="password"
-            fullWidth
-            size="small"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <FormRow>
+            <FormField>
+              <TextField
+                autoComplete="off"
+                className="login__input"
+                id="outlined-password-input"
+                label="Password"
+                type="password"
+                fullWidth
+                size="small"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </FormField>
+          </FormRow>
 
           <Button fullWidth type="submit" variant="contained">
             Login

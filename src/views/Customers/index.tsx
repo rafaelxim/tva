@@ -6,9 +6,6 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
-import Checkbox from "@mui/material/Checkbox";
-import ListItemText from "@mui/material/ListItemText";
-import OutlinedInput from "@mui/material/OutlinedInput";
 import TableRow from "@mui/material/TableRow";
 import Chip from "@mui/material/Chip";
 import Button from "@mui/material/Button";
@@ -30,37 +27,28 @@ import { Column } from "../../types/muiTypes";
 import Backdrop from "../../components/Backdrop";
 import EditIcon from "../../assets/edit.svg";
 import { setSnackbarAlert } from "../../actions/feedbackActions";
-import { Company, GetCompaniesResponse } from "../Companies";
 import { validateEmail } from "../../utils";
-import { StoreState } from "../../actions/types";
+import { Roles, StoreState } from "../../actions/types";
 import { hasRole } from "../../helpers/authHelper";
 import PermissionDenied from "../PermissionDenied";
 import FormRow from "../../components/FormRow";
 import FormField from "../../components/FormField";
 
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-  PaperProps: {
-    style: {
-      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-    },
-  },
-};
-
 type Props = Record<string, never>;
 
-type Customer = {
+export type Customer = {
   id: number;
-  name: string;
+  first_name: string;
   is_active: boolean;
   email: string;
   password: string;
   age_control_password: string;
   company: number[];
+  username: string;
+  groups: Roles;
 };
 
-type GetCustomersResponse = Customer[];
+export type GetCustomersResponse = Customer[];
 
 const columns: readonly Column[] = [
   { id: "id", label: "#" },
@@ -88,13 +76,12 @@ const Customers: React.FC<Props> = () => {
   const [modalIsOpen, setOpenModal] = useState(false);
   const [customerName, setCustomerName] = useState<string>();
   const [password, setPassword] = useState<string>();
+  const [username, setUsername] = useState<string>();
   const [ageControlPassword, setAgeControlPassword] = useState<string>();
   const [customerMail, setCustomerMail] = useState<string>();
   const [customerStatus, setCustomerStatus] = useState<string>("ativo");
   const [modalMode, setModalMode] = useState<"Edit" | "Add">("Add");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer>();
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
 
   useEffect(() => {
     const isPermitOk = hasRole(user!, "Company");
@@ -102,28 +89,8 @@ const Customers: React.FC<Props> = () => {
 
     if (isPermitOk) {
       fetchCustomers();
-      fetchCompanies();
     }
   }, []);
-
-  const fetchCompanies = async () => {
-    setLoading(true);
-
-    try {
-      const { data } = await api.get<GetCompaniesResponse>("/company/");
-      setCompanies(data);
-      setLoading(false);
-    } catch (e) {
-      dispatch(
-        setSnackbarAlert({
-          message: "Houve um erro ao tentar realizar a requisição",
-          isVisible: true,
-          severity: "error",
-        })
-      );
-      setLoading(false);
-    }
-  };
 
   const fetchCustomers = async () => {
     setLoading(true);
@@ -135,22 +102,6 @@ const Customers: React.FC<Props> = () => {
     } catch (e) {
       setLoading(false);
     }
-  };
-
-  const getCompanyNames = () => {
-    return companies?.map((company) => {
-      return company.name;
-    });
-  };
-
-  const getCompanyNamesFromId = (ids: number[]): string[] => {
-    return ids.map((id) => companies.find((c) => c.id === id)!.name);
-  };
-
-  const getCompanyCodes = () => {
-    return selectedCompanies.map((sCompany) => {
-      return companies.find((c) => c.name === sCompany)?.id;
-    });
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -170,10 +121,10 @@ const Customers: React.FC<Props> = () => {
 
   const resetModalState = () => {
     setCustomerName("");
-    setSelectedCompanies([]);
     setCustomerMail("");
     setAgeControlPassword("");
     setPassword("");
+    setUsername("");
   };
 
   const saveCustomerData = async () => {
@@ -181,6 +132,17 @@ const Customers: React.FC<Props> = () => {
       dispatch(
         setSnackbarAlert({
           message: "O campo nome do cliente é obrigatório!",
+          isVisible: true,
+          severity: "error",
+        })
+      );
+      return;
+    }
+
+    if (!username) {
+      dispatch(
+        setSnackbarAlert({
+          message: "O campo username é obrigatório!",
           isVisible: true,
           severity: "error",
         })
@@ -221,27 +183,16 @@ const Customers: React.FC<Props> = () => {
       return;
     }
 
-    if (selectedCompanies.length === 0) {
-      dispatch(
-        setSnackbarAlert({
-          message: "Selecione pelo menos uma empresa associada",
-          isVisible: true,
-          severity: "error",
-        })
-      );
-      return;
-    }
-
     try {
       setLoading(true);
 
       const payload = {
-        name: customerName,
+        first_name: customerName,
         is_active: customerStatus === "ativo",
-        company: getCompanyCodes(),
         email: customerMail,
         user: user!.id,
         password,
+        username,
         age_control_password: ageControlPassword,
       };
 
@@ -282,10 +233,9 @@ const Customers: React.FC<Props> = () => {
 
   const handleEditClick = (row: Customer) => {
     setModalMode("Edit");
-    setCustomerName(row.name);
+    setCustomerName(row.first_name);
     setCustomerStatus(row.is_active ? "ativo" : "inativo");
     setCustomerMail(row.email);
-    setSelectedCompanies(getCompanyNamesFromId(row.company));
     setOpenModal(true);
     setSelectedCustomer(row);
     setAgeControlPassword(row.age_control_password);
@@ -323,18 +273,6 @@ const Customers: React.FC<Props> = () => {
     setOpenModal(false);
   };
 
-  const handleChangeCompany = (
-    event: SelectChangeEvent<typeof selectedCompanies>
-  ) => {
-    const {
-      target: { value },
-    } = event;
-    setSelectedCompanies(
-      // On autofill we get a stringified value.
-      typeof value === "string" ? value.split(",") : value
-    );
-  };
-
   if (!hasPermission) {
     return <PermissionDenied />;
   }
@@ -355,7 +293,7 @@ const Customers: React.FC<Props> = () => {
         <DialogContent>
           <h1 className="customers__modalTitle">
             {modalMode === "Edit"
-              ? `Editar Cliente - ${selectedCustomer?.name}`
+              ? `Editar Cliente - ${selectedCustomer?.first_name}`
               : "Adicionar Cliente"}
           </h1>
 
@@ -412,31 +350,17 @@ const Customers: React.FC<Props> = () => {
               />
             </FormField>
             <FormField>
-              <FormControl size="small" fullWidth sx={{ m: 1, width: 200 }}>
-                <InputLabel id="customers__empresasLabel">
-                  Empresa(s)
-                </InputLabel>
-                <Select
-                  labelId="customers__empresasLabel"
-                  multiple
-                  value={selectedCompanies}
-                  onChange={handleChangeCompany}
-                  input={<OutlinedInput label="Empresa(s)" />}
-                  renderValue={(selected) => selected.join(", ")}
-                  MenuProps={MenuProps}
-                  fullWidth
-                  size="small"
-                >
-                  {getCompanyNames().map((name) => (
-                    <MenuItem key={name} value={name}>
-                      <Checkbox
-                        checked={selectedCompanies.indexOf(name) > -1}
-                      />
-                      <ListItemText primary={name} />
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <TextField
+                autoComplete="off"
+                className="customers__input"
+                id="outlined-search"
+                label="Username"
+                type="text"
+                size="small"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                fullWidth
+              />
             </FormField>
           </FormRow>
 
@@ -545,7 +469,7 @@ const Customers: React.FC<Props> = () => {
                           key={row.id}
                         >
                           <TableCell>#{row.id}</TableCell>
-                          <TableCell>{row.name}</TableCell>
+                          <TableCell>{row.first_name}</TableCell>
                           <TableCell>{row.email}</TableCell>
                           <TableCell>
                             {row.is_active ? (

@@ -30,9 +30,9 @@ import api from "../../services/api";
 import "./styles.scss";
 import { Column } from "../../types/muiTypes";
 import Backdrop from "../../components/Backdrop";
-import EditIcon from "../../assets/edit.svg";
+// import EditIcon from "../../assets/edit.svg";
 import { setSnackbarAlert } from "../../actions/feedbackActions";
-import { StoreState } from "../../actions/types";
+import { StoreState, UserDetails } from "../../actions/types";
 import { hasRole } from "../../helpers/authHelper";
 import PermissionDenied from "../PermissionDenied";
 import FormRow from "../../components/FormRow";
@@ -43,21 +43,12 @@ import { validateEmail } from "../../utils";
 
 type Props = Record<string, never>;
 
-export type User = {
-  id: number;
-  username: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  is_active: boolean;
-};
-
-export type GetUsersResponse = User[];
+export type GetUsersResponse = UserDetails[];
 
 const columns: readonly Column[] = [
   { id: "id", label: "#" },
-  { id: "empresa", label: "EMPRESA" },
+  { id: "username", label: "USERNAME" },
+  { id: "perfil", label: "PERFIL" },
   {
     id: "status",
     label: "STATUS",
@@ -88,7 +79,7 @@ const Users: React.FC<Props> = () => {
   const { user } = useSelector((state: StoreState) => state.authReducer);
 
   const [hasPermission, setPermission] = useState(false);
-  const [rows, setRows] = useState<User[]>();
+  const [rows, setRows] = useState<UserDetails[]>();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [loading, setLoading] = useState(false);
@@ -100,7 +91,7 @@ const Users: React.FC<Props> = () => {
   const [password, setPassword] = useState<string>();
   const [userStatus, setUserStatus] = useState<string>("ativo");
   const [modalMode, setModalMode] = useState<"Edit" | "Add">("Add");
-  const [selectedUser, setSelectedUser] = useState<User>();
+  const [selectedUser] = useState<UserDetails>();
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [isCompanyUser, setIsCompanyUser] = useState<boolean>(false);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -163,7 +154,8 @@ const Users: React.FC<Props> = () => {
     setLoading(true);
 
     try {
-      const { data } = await api.get<GetUsersResponse>("/user/");
+      const { data } = await api.get<GetUsersResponse>("/users/");
+
       setRows(data);
       setLoading(false);
     } catch (e) {
@@ -308,13 +300,13 @@ const Users: React.FC<Props> = () => {
     setOpenModal(true);
   };
 
-  const handleEditClick = (row: User) => {
-    setModalMode("Edit");
-    setUserName(row.username);
-    setUserStatus(row.is_active ? "ativo" : "inativo");
-    setOpenModal(true);
-    setSelectedUser(row);
-  };
+  // const handleEditClick = (row: UserDetails) => {
+  //   setModalMode("Edit");
+  //   setUserName(row.username);
+  //   setUserStatus(row.is_active ? "ativo" : "inativo");
+  //   setOpenModal(true);
+  //   setSelectedUser(row);
+  // };
 
   // const onDeleteUser = async () => {
   //   setLoading(true);
@@ -476,7 +468,7 @@ const Users: React.FC<Props> = () => {
                     onChange={(e) => handleChangeSwitch(e)}
                   />
                 }
-                label="Usuário Empresa?"
+                label="Perfil Empresa?"
               />
             </FormField>
           </FormRow>
@@ -614,6 +606,11 @@ const Users: React.FC<Props> = () => {
                           <TableCell>#{row.id}</TableCell>
                           <TableCell>{row.username}</TableCell>
                           <TableCell>
+                            {row.is_superuser
+                              ? "Super User"
+                              : row.groups.map((g) => g.name).join(", ")}
+                          </TableCell>
+                          <TableCell>
                             {row.is_active ? (
                               <Chip label="Ativo" color="success" />
                             ) : (
@@ -622,12 +619,13 @@ const Users: React.FC<Props> = () => {
                           </TableCell>
                           <TableCell>
                             <Tooltip title="Editar">
-                              <img
+                              {/* <img
                                 onClick={() => handleEditClick(row)}
                                 className="users__icon"
                                 src={EditIcon}
                                 alt="edit"
-                              />
+                              /> */}
+                              <p>Em desenvolvimento</p>
                             </Tooltip>
                           </TableCell>
                         </TableRow>

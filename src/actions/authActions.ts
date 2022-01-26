@@ -8,7 +8,7 @@ import {
   DecodedToken,
   LoginResponse,
   Roles,
-  UserDetailsResponse,
+  UserDetails,
 } from "./types";
 
 export const ROLES: Roles = [
@@ -40,8 +40,8 @@ export const authenticate =
       localStorage.setItem("@tva_token", data.access);
       localStorage.setItem("@tva_refresh_token", data.refresh);
       const decodedToken: DecodedToken = jwt_decode(data.access);
-      const details = await api.get<UserDetailsResponse>(
-        `/details/${decodedToken.user_id}/`
+      const details = await api.get<UserDetails>(
+        `/user-details/${decodedToken.user_id}/`
       );
 
       if (details.data.groups.length === 0) {

@@ -53,7 +53,7 @@ export type Package = {
   id: number;
   name: string;
   is_active: boolean;
-  company: number;
+  company: number[];
 };
 
 export type GetPackagesResponse = Package[];
@@ -138,9 +138,8 @@ const Packages: React.FC<Props> = () => {
     });
   };
 
-  const getCompanyNamesFromId = (id: number): string[] => {
-    // return ids.map((id) => companies.find((c) => c.id === id)!.name);
-    return [companies.find((c) => c.id === id)!.name];
+  const getCompanyNamesFromId = (ids: number[]): string[] => {
+    return ids.map((id) => companies.find((c) => c.id === id)!.name);
   };
 
   const getCompanyCodes = () => {
@@ -197,8 +196,7 @@ const Packages: React.FC<Props> = () => {
       const payload = {
         name: packageName,
         is_active: packageStatus === "ativo",
-        company: getCompanyCodes()[0],
-        user: user!.id,
+        company: getCompanyCodes(),
       };
       if (modalMode === "Add") {
         await api.post("/package/", payload);
@@ -281,10 +279,7 @@ const Packages: React.FC<Props> = () => {
     const {
       target: { value },
     } = event;
-    setSelectedCompanies(
-      // On autofill we get a stringified value.
-      typeof value === "string" ? value.split(",").slice(-1) : value.slice(-1)
-    );
+    setSelectedCompanies(typeof value === "string" ? value.split(",") : value);
   };
 
   if (!hasPermission) {

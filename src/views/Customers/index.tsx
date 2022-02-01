@@ -190,7 +190,6 @@ const Customers: React.FC<Props> = () => {
         first_name: customerName,
         is_active: customerStatus === "ativo",
         email: customerMail,
-        user: user!.id,
         password,
         username,
         age_control_password: ageControlPassword,

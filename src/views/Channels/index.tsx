@@ -213,8 +213,6 @@ const Channels: React.FC<Props> = () => {
       bodyFormData.append("user", user!.id.toString());
       if (file) {
         bodyFormData.append("logo", file);
-      } else {
-        bodyFormData.append("logo", "null");
       }
       bodyFormData.append("url", url!);
       bodyFormData.append("number", number!.toString());

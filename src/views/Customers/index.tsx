@@ -11,6 +11,9 @@ import Chip from "@mui/material/Chip";
 import Button from "@mui/material/Button";
 import AddIcon from "@mui/icons-material/Add";
 import Tooltip from "@mui/material/Tooltip";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import Checkbox from "@mui/material/Checkbox";
+import ListItemText from "@mui/material/ListItemText";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import FormControl from "@mui/material/FormControl";
@@ -33,8 +36,19 @@ import { hasRole } from "../../helpers/authHelper";
 import PermissionDenied from "../PermissionDenied";
 import FormRow from "../../components/FormRow";
 import FormField from "../../components/FormField";
+import { GetPackagesResponse, Package } from "../Packages";
 
 type Props = Record<string, never>;
+
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+    },
+  },
+};
 
 export type Customer = {
   id: number;
@@ -82,12 +96,15 @@ const Customers: React.FC<Props> = () => {
   const [customerStatus, setCustomerStatus] = useState<string>("ativo");
   const [modalMode, setModalMode] = useState<"Edit" | "Add">("Add");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer>();
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [selectedPackages, setSelectedPackages] = useState<string[]>([]);
 
   useEffect(() => {
     const isPermitOk = hasRole(user!, "Company");
     setPermission(isPermitOk);
 
     if (isPermitOk) {
+      fetchPackages();
       fetchCustomers();
     }
   }, []);
@@ -117,6 +134,12 @@ const Customers: React.FC<Props> = () => {
 
   const handleSelectChange = (event: SelectChangeEvent) => {
     setCustomerStatus(event.target.value);
+  };
+
+  const getPackageCodes = () => {
+    return selectedPackages.map((sPackage) => {
+      return packages.find((c) => c.name === sPackage)?.id;
+    });
   };
 
   const resetModalState = () => {
@@ -193,6 +216,7 @@ const Customers: React.FC<Props> = () => {
         password,
         username,
         age_control_password: ageControlPassword,
+        ...(selectedPackages.length > 0 && { package: getPackageCodes()[0] }),
       };
 
       if (modalMode === "Add") {
@@ -221,6 +245,37 @@ const Customers: React.FC<Props> = () => {
         })
       );
 
+      setLoading(false);
+    }
+  };
+
+  const handleChangePackage = (
+    event: SelectChangeEvent<typeof selectedPackages>
+  ) => {
+    const {
+      target: { value },
+    } = event;
+    setSelectedPackages(
+      // On autofill we get a stringified value.
+      typeof value === "string" ? value.split(",").slice(-1) : value.slice(-1)
+    );
+  };
+
+  const fetchPackages = async () => {
+    setLoading(true);
+
+    try {
+      const { data } = await api.get<GetPackagesResponse>("/package/");
+      setPackages(data);
+      setLoading(false);
+    } catch (e) {
+      dispatch(
+        setSnackbarAlert({
+          message: "Houve um erro ao tentar realizar a requisição",
+          isVisible: true,
+          severity: "error",
+        })
+      );
       setLoading(false);
     }
   };
@@ -270,6 +325,12 @@ const Customers: React.FC<Props> = () => {
   const handleCloseModal = () => {
     resetModalState();
     setOpenModal(false);
+  };
+
+  const getPackageNames = () => {
+    return packages?.map((p) => {
+      return p.name;
+    });
   };
 
   if (!hasPermission) {
@@ -390,6 +451,31 @@ const Customers: React.FC<Props> = () => {
                 onChange={(e) => setAgeControlPassword(e.target.value)}
                 fullWidth
               />
+            </FormField>
+          </FormRow>
+          <FormRow>
+            <FormField>
+              <FormControl size="small" fullWidth sx={{ m: 1, width: 200 }}>
+                <InputLabel id="channels__empresasLabel">Pacote</InputLabel>
+                <Select
+                  labelId="channels__empresasLabel"
+                  multiple
+                  value={selectedPackages}
+                  onChange={handleChangePackage}
+                  input={<OutlinedInput label="Pacote" />}
+                  renderValue={(selected) => selected.join(", ")}
+                  MenuProps={MenuProps}
+                  fullWidth
+                  size="small"
+                >
+                  {getPackageNames().map((name) => (
+                    <MenuItem key={name} value={name}>
+                      <Checkbox checked={selectedPackages.indexOf(name) > -1} />
+                      <ListItemText primary={name} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </FormField>
           </FormRow>
 

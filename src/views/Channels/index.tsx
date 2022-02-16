@@ -87,7 +87,6 @@ const Channels: React.FC<Props> = () => {
   const [modalIsOpen, setOpenModal] = useState(false);
   const [channelName, setChannelName] = useState<string>();
   const [channelStatus, setChannelStatus] = useState<string>("ativo");
-  const [logo, setLogo] = useState<string>();
   const [url, setUrl] = useState<string>();
   const [number, setNumber] = useState<number>();
   const [ageControl, setAgeControl] = useState<string>("ativo");
@@ -95,6 +94,7 @@ const Channels: React.FC<Props> = () => {
   const [selectedChannel, setSelectedChannel] = useState<Channel>();
   const [packages, setPackages] = useState<Package[]>([]);
   const [selectedPackages, setSelectedPackages] = useState<string[]>([]);
+  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     const isPermitOk =
@@ -175,9 +175,9 @@ const Channels: React.FC<Props> = () => {
     setChannelName("");
     setSelectedPackages([]);
     setNumber(1);
-    setLogo("");
     setUrl("");
     setChannelStatus("ativo");
+    setFile(null);
   };
 
   const saveChannelData = async () => {
@@ -205,20 +205,28 @@ const Channels: React.FC<Props> = () => {
 
     try {
       setLoading(true);
-      const payload = {
-        name: channelName,
-        is_active: channelStatus === "ativo",
-        age_control: ageControl === "ativo",
-        package: getPackageCodes(),
-        user: user!.id,
-        logo,
-        url,
-        number,
-      };
-      if (modalMode === "Add") {
-        await api.post("/channel/", payload);
+      const bodyFormData = new FormData();
+      bodyFormData.append("name", channelName);
+      bodyFormData.append("is_active", (channelStatus === "ativo").toString());
+      bodyFormData.append("age_control", (ageControl === "ativo").toString());
+      bodyFormData.append("package", getPackageCodes().toString());
+      bodyFormData.append("user", user!.id.toString());
+      if (file) {
+        bodyFormData.append("logo", file);
       } else {
-        await api.patch(`/channel/${selectedChannel!.id}/`, payload);
+        bodyFormData.append("logo", "null");
+      }
+      bodyFormData.append("url", url!);
+      bodyFormData.append("number", number!.toString());
+
+      if (modalMode === "Add") {
+        await api.post("/channel/", bodyFormData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      } else {
+        await api.patch(`/channel/${selectedChannel!.id}/`, bodyFormData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       }
 
       setLoading(false);
@@ -257,10 +265,13 @@ const Channels: React.FC<Props> = () => {
     setAgeControl(row.is_active ? "ativo" : "inativo");
     setNumber(row.number);
     setUrl(row.url);
-    setLogo(row.logo);
     setSelectedPackages(getPackageNamesFromId(row.package));
     setOpenModal(true);
     setSelectedChannel(row);
+  };
+
+  const onChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFile(event.target.files![0]);
   };
 
   // const onDeleteChannel = async () => {
@@ -404,19 +415,22 @@ const Channels: React.FC<Props> = () => {
 
           <FormRow>
             <FormField>
-              <TextField
-                className="channels__input"
-                id="outlined-search"
-                label="Logo(URL)"
-                type="text"
-                size="small"
-                value={logo}
-                autoComplete="off"
-                onChange={(e) => setLogo(e.target.value)}
-                fullWidth
-              />
+              <div className="anexo__field">
+                <div className="anexo__fileName">
+                  {file?.name || "Nenhum arquivo selecionado"}
+                </div>
+                <label className="anexo__anexButton" htmlFor="anexFile">
+                  {!file ? "Selecionar logo" : "Alterar logo"}
+                  <input
+                    style={{ visibility: "hidden" }}
+                    id="anexFile"
+                    type="file"
+                    name="file"
+                    onChange={onChangeHandler}
+                  />
+                </label>
+              </div>
             </FormField>
-
             <FormField>
               <TextField
                 className="channels__input"

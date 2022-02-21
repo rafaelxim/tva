@@ -209,7 +209,10 @@ const Channels: React.FC<Props> = () => {
       bodyFormData.append("name", channelName);
       bodyFormData.append("is_active", (channelStatus === "ativo").toString());
       bodyFormData.append("age_control", (ageControl === "ativo").toString());
-      bodyFormData.append("package", getPackageCodes().toString());
+      getPackageCodes().forEach((p) => {
+        bodyFormData.append("package", p!.toString());
+      });
+
       bodyFormData.append("user", user!.id.toString());
       if (file) {
         bodyFormData.append("logo", file);

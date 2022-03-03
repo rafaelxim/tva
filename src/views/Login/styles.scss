@@ -3,6 +3,14 @@
   height: 100vh;
   position: relative;
 
+  &__p1 {
+    margin-top: 2rem;
+    color: #7367f0;
+    text-decoration: underline;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+
   &__right {
     flex: 0 0 40%;
   }

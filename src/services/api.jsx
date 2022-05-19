@@ -1,7 +1,7 @@
 import axios from "axios";
 import history from "../history";
 
-const BASE_URL = "http://tvanetplay.mihub.com.br/v1";
+const BASE_URL = "https://tvanetplay.mihub.com.br:8000/v1";
 
 const api = axios.create({
   baseURL: BASE_URL,

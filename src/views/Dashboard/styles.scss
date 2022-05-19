@@ -1,6 +1,76 @@
 .dashboard {
   background-color: #f8f8f8;
 
+  &__statistics {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  &__statisticsPaper {
+    padding: 2rem 4rem;
+  }
+
+  &__sTextVal {
+    color: #5e5873;
+    font-size: 1.8rem;
+    font-weight: bold;
+  }
+
+  &__sTextLabel {
+    color: #6e6b7b;
+    font-size: 1.2rem;
+    font-weight: lighter;
+    letter-spacing: 0.1rem;
+  }
+
+  &__stat {
+    display: flex;
+    align-items: center;
+  }
+
+  &__statisticsTitle {
+    color: #5e5873;
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+  }
+
+  &__sIcon {
+    padding: 1.5rem;
+    border-radius: 50%;
+
+    &--red {
+      background-color: rgba(234, 84, 85, 0.12);
+      svg {
+        color: #ea5455;
+      }
+    }
+
+    &--purple {
+      background-color: rgba(115, 103, 240, 0.12);
+      svg {
+        color: #7367f0;
+      }
+    }
+
+    &--blue {
+      background-color: rgba(0, 207, 232, 0.12);
+      svg {
+        color: #00cfe8;
+      }
+    }
+
+    &--green {
+      background-color: rgba(40, 199, 111, 0.12);
+      svg {
+        color: #28c76f;
+      }
+    }
+  }
+
+  &__sText {
+    padding: 2rem;
+  }
+
   &__content {
     min-height: 90vh;
     padding: 0 2.8rem;
